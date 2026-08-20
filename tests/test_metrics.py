@@ -32,7 +32,12 @@ class PowerQualityTests(unittest.TestCase):
     def test_frequency_requires_two_crossings(self) -> None:
         self.assertIsNone(estimate_frequency([1.0] * 20, 1_000.0))
 
+    def test_synthetic_rms_inputs_cannot_be_negative(self) -> None:
+        with self.assertRaises(ValueError):
+            generate_ac_waveforms(current_rms=-1.0)
+        with self.assertRaises(ValueError):
+            generate_ac_waveforms(noise_rms=-0.1)
+
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -18,6 +18,8 @@ def generate_ac_waveforms(
 ) -> tuple[list[float], list[float]]:
     if min(duration_s, sample_rate_hz, frequency_hz, voltage_rms) <= 0:
         raise ValueError("duration, rate, frequency, and voltage must be positive")
+    if current_rms < 0 or noise_rms < 0:
+        raise ValueError("current and noise RMS values cannot be negative")
     sample_count = max(8, round(duration_s * sample_rate_hz))
     voltage_peak = voltage_rms * sqrt(2.0)
     current_peak = current_rms * sqrt(2.0)
@@ -31,4 +33,3 @@ def generate_ac_waveforms(
         voltage.append(voltage_peak * sin(angle) + rng.gauss(0.0, noise_rms))
         current.append(current_peak * sin(angle - phase_radians))
     return voltage, current
-

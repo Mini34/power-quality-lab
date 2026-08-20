@@ -3,6 +3,6 @@ __pycache__/
 .venv/
 dist/
 build/
+*.egg-info/
 reports/*.csv
 reports/*.json
-

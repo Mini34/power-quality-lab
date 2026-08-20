@@ -17,6 +17,11 @@ current waveforms into measurable power-quality evidence.
 ## Run it
 
 ```powershell
+python -m pip install .
+power-quality --scenario normal
+power-quality --scenario sag
+
+# The module form works without installation from the repository root.
 python -m power_quality_lab.cli --scenario normal
 python -m power_quality_lab.cli --scenario sag
 python -m power_quality_lab.cli --scenario low-pf
@@ -38,6 +43,13 @@ Example:
 }
 ```
 
+| Classification | Explicit threshold at 120 V nominal |
+| --- | --- |
+| Voltage sag | Below 108 V RMS |
+| Normal voltage | 108–132 V RMS |
+| Voltage swell | Above 132 V RMS |
+| Low power factor | Below 0.80 when voltage is within range |
+
 ## Engineering decisions
 
 - Simultaneous samples preserve the phase relationship needed for active power and power factor.
@@ -52,4 +64,3 @@ instrument. It does not model ADC quantization, sensor isolation, harmonics, cal
 drift, or electrical safety. A physical version would require isolated voltage/current
 sensing, protection, calibration against a trusted meter, and a safe low-voltage test
 setup before any mains-connected work.
-
