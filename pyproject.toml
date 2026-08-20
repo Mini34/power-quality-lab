@@ -1,0 +1,14 @@
+[project]
+name = "power-quality-lab"
+version = "0.1.0"
+description = "A standard-library AC power-quality analysis and fault-classification lab"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Mina Soliman" }]
+
+[project.scripts]
+power-quality = "power_quality_lab.cli:main"
+
+[tool.ruff]
+line-length = 100
+
