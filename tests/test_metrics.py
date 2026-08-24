@@ -38,6 +38,18 @@ class PowerQualityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             generate_ac_waveforms(noise_rms=-0.1)
 
+    def test_non_finite_samples_are_rejected(self) -> None:
+        voltage, current = generate_ac_waveforms()
+        voltage[10] = math.inf
+        with self.assertRaisesRegex(ValueError, "finite"):
+            analyse_window(voltage, current, 4_000.0)
+
+    def test_zero_current_is_classified_as_no_load(self) -> None:
+        voltage, _ = generate_ac_waveforms()
+        result = analyse_window(voltage, [0.0] * len(voltage), 4_000.0)
+        self.assertEqual(result.condition, "no_load")
+        self.assertEqual(result.power_factor, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

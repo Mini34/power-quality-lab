@@ -12,7 +12,7 @@ current waveforms into measurable power-quality evidence.
 - Active and apparent power
 - Power factor from simultaneous voltage/current samples
 - Frequency using interpolated positive-going zero crossings
-- Voltage sag, voltage swell, and low-power-factor conditions
+- Voltage sag, voltage swell, no-load windows, and low-power-factor conditions
 
 ## Run it
 
@@ -48,6 +48,7 @@ Example:
 | Voltage sag | Below 108 V RMS |
 | Normal voltage | 108–132 V RMS |
 | Voltage swell | Above 132 V RMS |
+| No load | Current at numerical zero when voltage is within range |
 | Low power factor | Below 0.80 when voltage is within range |
 
 ## Engineering decisions

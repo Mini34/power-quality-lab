@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
-from math import sqrt
+from itertools import pairwise
+from math import isfinite, sqrt
 from statistics import fmean
-from typing import Sequence
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,8 @@ def _validate_samples(voltage: Sequence[float], current: Sequence[float]) -> Non
         raise ValueError("voltage and current must contain the same number of samples")
     if len(voltage) < 8:
         raise ValueError("at least eight samples are required")
+    if not all(isfinite(sample) for samples in (voltage, current) for sample in samples):
+        raise ValueError("voltage and current samples must be finite")
 
 
 def rms(samples: Sequence[float]) -> float:
@@ -38,6 +41,8 @@ def rms(samples: Sequence[float]) -> float:
 def estimate_frequency(voltage: Sequence[float], sample_rate_hz: float) -> float | None:
     if sample_rate_hz <= 0:
         raise ValueError("sample_rate_hz must be positive")
+    if not all(isfinite(sample) for sample in voltage):
+        raise ValueError("voltage samples must be finite")
     crossings: list[float] = []
     for index in range(1, len(voltage)):
         previous = voltage[index - 1]
@@ -47,7 +52,7 @@ def estimate_frequency(voltage: Sequence[float], sample_rate_hz: float) -> float
             crossings.append((index - 1 + fraction) / sample_rate_hz)
     if len(crossings) < 2:
         return None
-    periods = [later - earlier for earlier, later in zip(crossings, crossings[1:])]
+    periods = [later - earlier for earlier, later in pairwise(crossings)]
     mean_period = fmean(periods)
     return 1.0 / mean_period if mean_period > 0 else None
 
@@ -56,11 +61,14 @@ def classify_condition(
     voltage_rms: float,
     power_factor: float,
     nominal_voltage: float,
+    current_rms: float | None = None,
 ) -> str:
     if voltage_rms < nominal_voltage * 0.90:
         return "voltage_sag"
     if voltage_rms > nominal_voltage * 1.10:
         return "voltage_swell"
+    if current_rms is not None and current_rms <= 1e-9:
+        return "no_load"
     if power_factor < 0.80:
         return "low_power_factor"
     return "normal"
@@ -78,12 +86,17 @@ def analyse_window(
 
     voltage_rms = rms(voltage)
     current_rms = rms(current)
-    active_power = fmean(v * i for v, i in zip(voltage, current))
+    active_power = fmean(v * i for v, i in zip(voltage, current, strict=True))
     apparent_power = voltage_rms * current_rms
     power_factor = abs(active_power) / apparent_power if apparent_power else 0.0
     power_factor = min(1.0, power_factor)
     frequency = estimate_frequency(voltage, sample_rate_hz)
-    condition = classify_condition(voltage_rms, power_factor, nominal_voltage)
+    condition = classify_condition(
+        voltage_rms,
+        power_factor,
+        nominal_voltage,
+        current_rms,
+    )
 
     return ElectricalMetrics(
         voltage_rms=round(voltage_rms, 3),

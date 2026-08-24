@@ -8,7 +8,6 @@ import json
 from .metrics import analyse_window
 from .synthetic import generate_ac_waveforms
 
-
 SCENARIOS = {
     "normal": (120.0, 20.0),
     "sag": (95.0, 20.0),
